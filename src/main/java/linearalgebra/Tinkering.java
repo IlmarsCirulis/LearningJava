@@ -27,7 +27,7 @@ public class Tinkering {
                 {Rational.of("1.2"), Rational.of("1.3")},
                 {Rational.of("3/4"), Rational.of("-1")}
         };
-        Matrix m = new Matrix(arr);
+        Matrix<Rational> m = new Matrix<Rational>(arr);
         System.out.println(m);
     }
 }

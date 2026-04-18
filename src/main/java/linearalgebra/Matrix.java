@@ -1,122 +1,175 @@
 package linearalgebra;
 
-import com.schuerger.math.rationalj.Rational;
+import structures.Field;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
-public class Matrix {
+public class Matrix<T> {
+    private final ArrayList<ArrayList<T>> contents;
 
-    private final Rational[][] contents;
-
-    private Matrix(Rational[][] contents, boolean copy) {
-        if (contents.length == 0) {
+    private Matrix(ArrayList<ArrayList<T>> contents, boolean copy) {
+        if (contents.isEmpty()) {
             throw new IllegalArgumentException("No empty matrices are allowed");
         }
-        for (Rational[] row : contents) {
-            if (row.length == 0) {
+        for (ArrayList<T> row : contents) {
+            if (row.isEmpty()) {
                 throw new IllegalArgumentException("No empty rows in matrix are allowed");
             }
         }
-        int lengthOfFirstRow = contents[0].length;
-        for (Rational[] row : contents) {
-            if (row.length != lengthOfFirstRow) {
-                throw new IllegalArgumentException("Rows of matrix must have the same length");
-            }
+        int sizeOfFirstRow = contents.getFirst().size();
+        if (contents.stream().anyMatch(r -> r.size() != sizeOfFirstRow)) {
+            throw new IllegalArgumentException("Rows of matrix must have the same length");
         }
         if (copy) {
-            this.contents = new Rational[contents.length][];
-            for (int i = 0; i < contents.length; i++) {
-                this.contents[i] = new Rational[contents[i].length];
-                System.arraycopy(contents[i], 0, this.contents[i], 0, contents[i].length);
+            this.contents = new ArrayList<>();
+            for (ArrayList<T> row : contents) {
+                this.contents.add(new ArrayList<>(row));
             }
         } else {
             this.contents = contents;
         }
     }
 
-    Matrix(Rational[][] contents) {
+    public Matrix(ArrayList<ArrayList<T>> contents) {
         this(contents, true);
     }
 
-    Rational[] getRow(int row) {
-        if (row < 0 || this.contents.length <= row) {
-            throw new ArrayIndexOutOfBoundsException("There isn't such row in this matrix");
+    public Matrix(T[][] contents) {
+        ArrayList<ArrayList<T>> arrayList = new ArrayList<>();
+        for (T[] row : contents) {
+            arrayList.add(new ArrayList<>(List.of(row)));
         }
-        Rational[] rowArray = new Rational[this.contents[row].length];
-        System.arraycopy(this.contents[row], 0, rowArray, 0, this.contents[row].length);
-        return rowArray;
+        this(arrayList, false);
     }
 
-    Rational[] getCol(int col) {
-        if (col < 0 || this.contents[0].length <= col) {
-            throw new ArrayIndexOutOfBoundsException("There isn't such column in this matrix");
-        }
-        Rational[] columnArray = new Rational[this.contents.length];
-        for (int row = 0; row < this.contents.length; row++) {
-            columnArray[row] = this.contents[row][col];
-        }
-        return columnArray;
+    int getNumberOfRows() {
+        return this.contents.size();
     }
 
-    private Matrix map2(Matrix other, BiFunction<Rational, Rational, Rational> fun) {
-        if (this.contents.length != other.contents.length || this.contents[0].length != other.contents[0].length) {
+    int getNumberOfColumns() {
+        return this.contents.getFirst().size();
+    }
+
+    T get(int row, int col) {
+        if (row < 0) {
+            throw new ArrayIndexOutOfBoundsException("Negative indexes for rows aren't allowed");
+        }
+        if (this.getNumberOfRows() <= row) {
+            throw new ArrayIndexOutOfBoundsException("There are only " + this.getNumberOfRows() + " rows in this matrix");
+        }
+        if (col < 0) {
+            throw new ArrayIndexOutOfBoundsException("Negative indexes for columns aren't allowed");
+        }
+        if (this.getNumberOfColumns() <= col) {
+            throw new ArrayIndexOutOfBoundsException("There are only " + this.getNumberOfColumns() + " columns in this matrix");
+        }
+        return this.contents.get(row).get(col);
+    }
+
+    ArrayList<T> getRow(int row) {
+        if (row < 0) {
+            throw new ArrayIndexOutOfBoundsException("Negative indexes for rows aren't allowed");
+        }
+        if (this.getNumberOfRows() <= row) {
+            throw new ArrayIndexOutOfBoundsException("There are only " + this.getNumberOfRows() + " rows in this matrix");
+        }
+        return new ArrayList<>(this.contents.get(row));
+    }
+
+    ArrayList<T> getColumn(int col) {
+        if (col < 0) {
+            throw new ArrayIndexOutOfBoundsException("Negative indexes for rows aren't allowed");
+        }
+        if (this.getNumberOfColumns() <= col) {
+            throw new ArrayIndexOutOfBoundsException("There are only " + this.getNumberOfColumns() + " columns in this matrix");
+        }
+        ArrayList<T> result = new ArrayList<>();
+        for (int i = 0; i < this.getNumberOfRows(); i++) {
+            result.add(this.contents.get(i).get(col));
+        }
+        return result;
+    }
+
+    private Matrix<T> map(Function<T, T> fun) {
+        ArrayList<ArrayList<T>> newContents = new ArrayList<>();
+        for (ArrayList<T> row : this.contents) {
+            ArrayList<T> newRow = new ArrayList<>();
+            for (T value : row) {
+                newRow.add(fun.apply(value));
+            }
+            newContents.add(newRow);
+        }
+        return new Matrix<>(newContents, false);
+    }
+
+    private Matrix<T> map2(Matrix<T> other, BiFunction<T, T, T> fun) {
+        if (this.getNumberOfRows() != other.getNumberOfRows() || this.getNumberOfColumns() != other.getNumberOfColumns()) {
             throw new IllegalArgumentException("Matrices has to have same dimensions");
         }
-        Rational[][] newContents = new Rational[this.contents.length][this.contents[0].length];
-        for (int row = 0; row < newContents.length; row++) {
-            for (int col = 0; col < newContents[0].length; col++) {
-                newContents[row][col] = fun.apply(this.contents[row][col], other.contents[row][col]);
+        ArrayList<ArrayList<T>> newContents = new ArrayList<>();
+        for (int row = 0; row < this.getNumberOfRows(); row++) {
+            ArrayList<T> temp = new ArrayList<>();
+            for (int col = 0; col < this.getNumberOfColumns(); col++) {
+                temp.add(fun.apply(this.contents.get(row).get(col), other.contents.get(row).get(col)));
             }
+            newContents.add(temp);
         }
-        return new Matrix(newContents, false);
-    }
-
-    Matrix add(Matrix other) {
-        return this.map2(other, Rational::add);
-    }
-
-    Matrix subtract(Matrix other) {
-        return this.map2(other, Rational::subtract);
-    }
-
-    Matrix multiply(Rational k) {
-        Rational[][] newContents = new Rational[this.contents.length][this.contents[0].length];
-        for (int row = 0; row < this.contents.length; row++) {
-            for (int col = 0; col < this.contents[0].length; col++) {
-                newContents[row][col] = this.contents[row][col].multiply(k);
-            }
-        }
-        return new Matrix(newContents, false);
-    }
-
-    Matrix multiply(Matrix other) {
-        if (this.contents[0].length != other.contents.length) {
-            throw new IllegalArgumentException("These matrices can't be multiplied");
-        }
-        Rational[][] newContents = new Rational[this.contents.length][other.contents[0].length];
-        for (int row = 0; row < this.contents.length; row++) {
-            for (int col = 0; col < other.contents[0].length; col++) {
-                Rational temp = Rational.ZERO;
-                for (int i = 0; i < this.contents[0].length; i++) {
-                    temp = temp.add(this.contents[row][i].multiply(other.contents[i][col]));
-                }
-                newContents[row][col] = temp;
-            }
-        }
-        return new Matrix(newContents, false);
+        return new Matrix<>(newContents, false);
     }
 
     @Override
     public String toString() {
         StringJoiner s = new StringJoiner(", ", "[", "]");
-        for (Rational[] row : this.contents) {
+        for (ArrayList<T> row : this.contents) {
             StringJoiner t = new StringJoiner(", ", "[", "]");
-            for (Rational value : row) {
+            for (T value : row) {
                 t.add(value.toString());
             }
             s.add(t.toString());
         }
         return s.toString();
     }
+
+    // Arithmetic operations with matrices
+
+    public Matrix<T> multiply(Field<T> field, T multiplier) {
+        return this.map(value -> field.mul.apply(value, multiplier));
+    }
+
+    public Matrix<T> opp(Field<T> field) {
+        return this.map(field.opp);
+    }
+
+    public Matrix<T> add(Field<T> field, Matrix<T> other) {
+        return this.map2(other, field.add);
+    }
+
+    public Matrix<T> sub(Field<T> field, Matrix<T> other) {
+        return this.map2(other, field.sub);
+    }
+
+    Matrix<T> multiply(Field<T> field, Matrix<T> other) {
+        if (this.getNumberOfColumns() != other.getNumberOfRows()) {
+            throw new IllegalArgumentException("These matrices can't be multiplied because dimensions are wrong");
+        }
+        ArrayList<ArrayList<T>> newContents = new ArrayList<>();
+        for (int row = 0; row < this.getNumberOfRows(); row++) {
+            ArrayList<T> newRow = new ArrayList<>();
+            for (int col = 0; col < other.getNumberOfColumns(); col++) {
+                T temp = field.ZERO;
+                for (int i = 0; i < this.getNumberOfColumns(); i++) {
+                    T summand = field.mul.apply(this.get(row, i), other.get(i, col));
+                    temp = field.add.apply(temp, summand);
+                }
+                newRow.add(temp);
+            }
+            newContents.add(newRow);
+        }
+        return new Matrix<>(newContents, false);
+    }
+
 }
