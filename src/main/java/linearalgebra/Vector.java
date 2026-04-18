@@ -1,9 +1,7 @@
-package rational.linearalgebra;
+package linearalgebra;
 
 import com.schuerger.math.rationalj.Rational;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.BiFunction;
 
@@ -12,6 +10,9 @@ public class Vector {
     private final Rational[] contents;
 
     private Vector(Rational[] contents, boolean copy) {
+        if (contents.length == 0) {
+            throw new IllegalArgumentException("No empty vectors are allowed");
+        }
         if (copy) {
             this.contents = new Rational[contents.length];
             System.arraycopy(contents, 0, this.contents, 0, contents.length);
@@ -20,8 +21,8 @@ public class Vector {
         }
     }
 
-    Vector(Rational[] contents) {
-        this(contents, true);
+    Vector(Rational... values) {
+        this(values, true);
     }
 
     public Vector multiply(Rational k) {
@@ -76,5 +77,22 @@ public class Vector {
             s.add(x.toString());
         }
         return s.toString();
+    }
+
+    public int size() {
+        return this.contents.length;
+    }
+
+    public Rational get(int i) {
+        if (i < 0 || this.contents.length <= i) {
+            throw new IndexOutOfBoundsException("Index = " + i + " while size of the vector = " + this.contents.length);
+        }
+        return this.contents[i];
+    }
+
+    public Rational[] getContents() {
+        Rational[] copy = new Rational[this.contents.length];
+        System.arraycopy(this.contents, 0, copy, 0, this.contents.length);
+        return copy;
     }
 }

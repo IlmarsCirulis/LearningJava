@@ -1,4 +1,4 @@
-package rational.linearalgebra;
+package linearalgebra;
 
 import com.schuerger.math.rationalj.Rational;
 
