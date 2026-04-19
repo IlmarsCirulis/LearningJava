@@ -1,6 +1,6 @@
-package linearalgebra;
+package com.ilmarscirulis.linearalgebra;
 
-import structures.Field;
+import com.ilmarscirulis.structures.Field;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +44,10 @@ public class Matrix<T> {
             arrayList.add(new ArrayList<>(List.of(row)));
         }
         this(arrayList, false);
+    }
+
+    public Matrix<T> deepCopy() {
+        return new Matrix<>(this.contents, true);
     }
 
     int getNumberOfRows() {
@@ -228,6 +232,7 @@ public class Matrix<T> {
         newContents.set(row1, modifiedRow);
         return new Matrix<>(newContents);
     }
+
 
 
 

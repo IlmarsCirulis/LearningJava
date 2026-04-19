@@ -1,8 +1,8 @@
-package linearalgebra;
+package com.ilmarscirulis.linearalgebra;
 
 import com.schuerger.math.rationalj.Rational;
 import org.junit.jupiter.api.Test;
-import structures.Field;
+import com.ilmarscirulis.structures.Field;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -118,7 +118,7 @@ public class TestMatrix {
     }
 
     @Test
-    void testMatrixConstructorsBothAreSame() {
+    public void testMatrixConstructorsBothAreSame() {
         Rational[][] arr1 = {{Rational.of(1, 3), Rational.of(1, 2)}, {Rational.of(3, 5), Rational.of(2, 3)}};
         Matrix<Rational> m1 = new Matrix<>(arr1);
 
@@ -135,7 +135,7 @@ public class TestMatrix {
     }
 
     @Test
-    void testMatrixGet() {
+    public void testMatrixGet() {
         Rational[][] arr = {
                 {Rational.of(1, 1), Rational.of(1, 2), Rational.of(1, 3)},
                 {Rational.of(2, 12), Rational.of(213, 2), Rational.of(2, 3)},

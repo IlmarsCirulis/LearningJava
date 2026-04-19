@@ -1,4 +1,4 @@
-package structures;
+package com.ilmarscirulis.structures;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;

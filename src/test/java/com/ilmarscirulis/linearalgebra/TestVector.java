@@ -1,4 +1,4 @@
-package linearalgebra;
+package com.ilmarscirulis.linearalgebra;
 
 import com.schuerger.math.rationalj.Rational;
 import org.junit.jupiter.api.Test;
