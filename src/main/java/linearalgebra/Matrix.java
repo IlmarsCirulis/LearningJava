@@ -108,7 +108,7 @@ public class Matrix<T> {
 
     private Matrix<T> map2(Matrix<T> other, BiFunction<T, T, T> fun) {
         if (this.getNumberOfRows() != other.getNumberOfRows() || this.getNumberOfColumns() != other.getNumberOfColumns()) {
-            throw new IllegalArgumentException("Matrices has to have same dimensions");
+            throw new IllegalArgumentException("Matrices has to have the same dimensions");
         }
         ArrayList<ArrayList<T>> newContents = new ArrayList<>();
         for (int row = 0; row < this.getNumberOfRows(); row++) {
@@ -133,6 +133,24 @@ public class Matrix<T> {
         }
         return s.toString();
     }
+
+    public Matrix<T> swapRows(int row1, int row2) {
+        if (row1 < 0 || row2 < 0) {
+            throw new IndexOutOfBoundsException("Negative indexes for rows aren't allowed");
+        }
+        if (this.getNumberOfRows() <= row1 || this.getNumberOfRows() <= row2) {
+            throw new IndexOutOfBoundsException("There are only " + this.getNumberOfRows() + " rows in this matrix");
+        }
+        if (row1 == row2) {
+            return this;
+        }
+        ArrayList<ArrayList<T>> newContents = new ArrayList<>(this.contents);
+        ArrayList<T> firstRow = newContents.get(row1), secondRow = newContents.get(row2);
+        newContents.set(row1, secondRow);
+        newContents.set(row2, firstRow);
+        return new Matrix<>(newContents);
+    }
+
 
     // Arithmetic operations with matrices
 
@@ -171,5 +189,46 @@ public class Matrix<T> {
         }
         return new Matrix<>(newContents, false);
     }
+
+
+    Matrix<T> multiplyRow(Field<T> field, int row, T multiplier) {
+        if (row < 0) {
+            throw new IndexOutOfBoundsException("Negative indexes for rows aren't allowed");
+        }
+        if (this.getNumberOfRows() <= row) {
+            throw new IndexOutOfBoundsException("There are only " + this.getNumberOfRows() + " rows in this matrix");
+        }
+        if (multiplier.equals(field.ZERO)) {
+            throw new IllegalArgumentException("The multiplier must be nonzero");
+        }
+        ArrayList<ArrayList<T>> newContents = new ArrayList<>(this.contents);
+        Function<T, T> mul = (x) -> field.mul.apply(x, multiplier);
+        newContents.set(row, new ArrayList<>(newContents.get(row).stream().map(mul).toList()));
+        return new Matrix<>(newContents);
+    }
+
+    Matrix<T> addMultipliedRow(Field<T> field, int row1, T multiplier, int row2) {
+        if (row1 < 0 || row2 < 0) {
+            throw new IndexOutOfBoundsException("Negative indexes for rows aren't allowed");
+        }
+        if (this.getNumberOfRows() <= row1 || this.getNumberOfRows() <= row2) {
+            throw new IndexOutOfBoundsException("There are only " + this.getNumberOfRows() + " rows in this matrix");
+        }
+        if (row1 == row2) {
+            throw new IllegalArgumentException("Row indexes must be different");
+        }
+        if (multiplier.equals(field.ZERO)) {
+            return this;
+        }
+        ArrayList<ArrayList<T>> newContents = new ArrayList<>(this.contents);
+        ArrayList<T> modifiedRow = new ArrayList<>(this.getNumberOfColumns());
+        for (int i = 0; i < this.getNumberOfColumns(); i++) {
+            modifiedRow.add(field.add.apply(this.get(row1, i),  field.mul.apply(this.get(row2, i), multiplier)));
+        }
+        newContents.set(row1, modifiedRow);
+        return new Matrix<>(newContents);
+    }
+
+
 
 }

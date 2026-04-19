@@ -205,6 +205,29 @@ public class TestMatrix {
     }
 
     @Test
+    public void testMatrixSwapRows() {
+        Rational[][] arr = {{Rational.of(7, 5), Rational.of(3, 2)}, {Rational.of(5, 3), Rational.of(2)}};
+        Matrix<Rational> matrix = new Matrix<>(arr);
+
+        assertThrows(IndexOutOfBoundsException.class, () -> matrix.swapRows(-1, 0));
+        assertThrows(IndexOutOfBoundsException.class, () -> matrix.swapRows(0, -1));
+        assertThrows(IndexOutOfBoundsException.class, () -> matrix.swapRows(2, 0));
+        assertThrows(IndexOutOfBoundsException.class, () -> matrix.swapRows(1, 2));
+
+        assertEquals("[[7/5, 3/2], [5/3, 2]]", matrix.toString());
+
+        Matrix<Rational> sameMatrix = matrix.swapRows(0, 0);
+        assertEquals("[[7/5, 3/2], [5/3, 2]]", matrix.toString());
+        assertEquals("[[7/5, 3/2], [5/3, 2]]", sameMatrix.toString());
+
+        Matrix<Rational> changedMatrix = matrix.swapRows(0, 1);
+        assertEquals("[[7/5, 3/2], [5/3, 2]]", matrix.toString());
+        assertEquals("[[5/3, 2], [7/5, 3/2]]", changedMatrix.toString());
+    }
+
+
+
+    @Test
     public void testMatrixMultiplyByNumber() {
         Rational[][] arr1 = {{Rational.of(1, 17)}};
         Matrix<Rational> m1 = new Matrix<>(arr1);
@@ -279,6 +302,47 @@ public class TestMatrix {
         assertEquals("[[551/78, -43/6], [-19/13, -61]]", m2.multiply(fieldOfRationalNumbers, m4).toString());
     }
 
-    
+    @Test
+    public void testMatrixMultiplyRow() {
+        Rational[][] arr = {{Rational.of(1, 3), Rational.of(2, 3)}, {Rational.of(1), Rational.of(4, 3)}};
+        Matrix<Rational> m = new Matrix<>(arr);
+        Rational multiplier = Rational.of(3, 2);
+
+        assertThrows(IllegalArgumentException.class, () -> m.multiplyRow(fieldOfRationalNumbers, 1, Rational.ZERO));
+        assertThrows(IndexOutOfBoundsException.class, () -> m.multiplyRow(fieldOfRationalNumbers, -1, multiplier));
+        assertThrows(IndexOutOfBoundsException.class, () -> m.multiplyRow(fieldOfRationalNumbers, 2, multiplier));
+
+        assertEquals("[[1/3, 2/3], [1, 4/3]]", m.toString());
+        Matrix<Rational> mNew = m.multiplyRow(fieldOfRationalNumbers, 0, multiplier);
+        assertEquals("[[1/2, 1], [1, 4/3]]", mNew.toString());
+        assertEquals("[[1/3, 2/3], [1, 4/3]]", m.toString());
+    }
+
+    @Test
+    public void testMatrixAddMultipliedRow() {
+        Rational[][] arr = {{Rational.of(1, 4), Rational.of(1)}, {Rational.of(-1, 2), Rational.of(2, 3)}};
+        Matrix<Rational> matrix = new Matrix<>(arr);
+        Rational multiplier = Rational.of(3, 2);
+
+        assertThrows(IndexOutOfBoundsException.class, () -> matrix.addMultipliedRow(fieldOfRationalNumbers, 1, multiplier, -1));
+        assertThrows(IndexOutOfBoundsException.class, () -> matrix.addMultipliedRow(fieldOfRationalNumbers, -1, multiplier, 0));
+        assertThrows(IndexOutOfBoundsException.class, () -> matrix.addMultipliedRow(fieldOfRationalNumbers, 0, multiplier, 2));
+        assertThrows(IndexOutOfBoundsException.class, () -> matrix.addMultipliedRow(fieldOfRationalNumbers, 2, multiplier, 1));
+        assertThrows(IllegalArgumentException.class, () -> matrix.addMultipliedRow(fieldOfRationalNumbers, 1, multiplier, 1));
+
+        assertEquals("[[1/4, 1], [-1/2, 2/3]]", matrix.toString());
+        Matrix<Rational> modifiedMatrix = matrix.addMultipliedRow(fieldOfRationalNumbers, 0, multiplier, 1);
+        assertEquals("[[-1/2, 2], [-1/2, 2/3]]", modifiedMatrix.toString());
+        assertEquals("[[1/4, 1], [-1/2, 2/3]]", matrix.toString());
+
+        modifiedMatrix = matrix.addMultipliedRow(fieldOfRationalNumbers, 1, multiplier, 0);
+        assertEquals("[[1/4, 1], [-1/8, 13/6]]", modifiedMatrix.toString());
+        assertEquals("[[1/4, 1], [-1/2, 2/3]]", matrix.toString());
+
+        modifiedMatrix = matrix.addMultipliedRow(fieldOfRationalNumbers, 1, Rational.ZERO, 0);
+        assertEquals("[[1/4, 1], [-1/2, 2/3]]", modifiedMatrix.toString());
+        assertEquals("[[1/4, 1], [-1/2, 2/3]]", matrix.toString());
+    }
+
 
 }
