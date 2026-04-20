@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestMatrix {
 
-    private Field<Rational> fieldOfRationalNumbers = new Field<>(Rational.ZERO, Rational.ONE, Rational::add, Rational::multiply, Rational::negate, Rational::reciprocal);
+    private final Field<Rational> fieldOfRationalNumbers = new Field<>(Rational.ZERO, Rational.ONE, Rational::add, Rational::multiply, Rational::negate, Rational::reciprocal);
 
     // test constructor that uses ArrayList<ArrayList<T>>
     @Test
@@ -334,10 +334,10 @@ public class TestMatrix {
 
     @Test
     public void testMatrixApplyElementaryRowOperation() {
-        ElementaryRowOperation op1, op2, op3;
-        op1 = new RowSwap(0, 1);
+        ElementaryRowOperation<Rational> op1, op2, op3;
+        op1 = new RowSwap<>(0, 1);
         op2 = new RowMultiplied<>(0, Rational.TWO);
-        op3 = new RowPlusMultipliedRow<Rational>(0, Rational.ONE_HALF, 1);
+        op3 = new RowPlusMultipliedRow<>(0, Rational.ONE_HALF, 1);
 
         Rational[][] arr = {{Rational.of(1, 4), Rational.of(1)}, {Rational.of(-1, 2), Rational.of(2, 3)}};
         Matrix<Rational> matrix = new Matrix<>(arr), m1, m2, m3;

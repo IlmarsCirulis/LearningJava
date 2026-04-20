@@ -1,4 +1,4 @@
 package com.ilmarscirulis.linearalgebra;
 
-public sealed interface ElementaryRowOperation permits RowSwap, RowMultiplied, RowPlusMultipliedRow {
+public sealed interface ElementaryRowOperation<T> permits RowSwap, RowMultiplied, RowPlusMultipliedRow {
 }

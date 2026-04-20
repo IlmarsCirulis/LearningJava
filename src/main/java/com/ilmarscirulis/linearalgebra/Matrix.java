@@ -233,11 +233,11 @@ public class Matrix<T> {
         return new Matrix<>(newContents);
     }
 
-    Matrix<T> applyElementaryRowOperation(Field<T> field, ElementaryRowOperation op) {
+    Matrix<T> applyElementaryRowOperation(Field<T> field, ElementaryRowOperation<T> op) {
         return switch (op) {
             case RowSwap(int i, int j) -> this.swapRows(i, j);
-            case RowMultiplied(int i, var k) -> this.multiplyRow(field, i, (T) k);
-            case RowPlusMultipliedRow(int i, var k, int j) -> this.addMultipliedRow(field, i, (T) k, j);
+            case RowMultiplied(int i, T k) -> this.multiplyRow(field, i, k);
+            case RowPlusMultipliedRow(int i, T k, int j) -> this.addMultipliedRow(field, i, k, j);
         };
     }
 
