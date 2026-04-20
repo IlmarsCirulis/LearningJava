@@ -12,14 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class TestMatrix {
 
-    private Field<Rational> fieldOfRationalNumbers = new Field<>(
-            Rational.ZERO,
-            Rational.ONE,
-            Rational::add,
-            Rational::multiply,
-            Rational::negate,
-            Rational::reciprocal
-    );
+    private Field<Rational> fieldOfRationalNumbers = new Field<>(Rational.ZERO, Rational.ONE, Rational::add, Rational::multiply, Rational::negate, Rational::reciprocal);
 
     // test constructor that uses ArrayList<ArrayList<T>>
     @Test
@@ -136,11 +129,7 @@ public class TestMatrix {
 
     @Test
     public void testMatrixGet() {
-        Rational[][] arr = {
-                {Rational.of(1, 1), Rational.of(1, 2), Rational.of(1, 3)},
-                {Rational.of(2, 12), Rational.of(213, 2), Rational.of(2, 3)},
-                {Rational.of(3, 11), Rational.of(3, 2), Rational.of(1)}
-        };
+        Rational[][] arr = {{Rational.of(1, 1), Rational.of(1, 2), Rational.of(1, 3)}, {Rational.of(2, 12), Rational.of(213, 2), Rational.of(2, 3)}, {Rational.of(3, 11), Rational.of(3, 2), Rational.of(1)}};
         Matrix<Rational> m = new Matrix<>(arr);
 
         assertThrows(IndexOutOfBoundsException.class, () -> m.get(-1, 2));
@@ -224,7 +213,6 @@ public class TestMatrix {
         assertEquals("[[7/5, 3/2], [5/3, 2]]", matrix.toString());
         assertEquals("[[5/3, 2], [7/5, 3/2]]", changedMatrix.toString());
     }
-
 
 
     @Test
@@ -344,5 +332,24 @@ public class TestMatrix {
         assertEquals("[[1/4, 1], [-1/2, 2/3]]", matrix.toString());
     }
 
+    @Test
+    public void testMatrixApplyElementaryRowOperation() {
+        ElementaryRowOperation op1, op2, op3;
+        op1 = new RowSwap(0, 1);
+        op2 = new RowMultiplied<>(0, Rational.TWO);
+        op3 = new RowPlusMultipliedRow<Rational>(0, Rational.ONE_HALF, 1);
+
+        Rational[][] arr = {{Rational.of(1, 4), Rational.of(1)}, {Rational.of(-1, 2), Rational.of(2, 3)}};
+        Matrix<Rational> matrix = new Matrix<>(arr), m1, m2, m3;
+
+        m1 = matrix.applyElementaryRowOperation(fieldOfRationalNumbers, op1);
+        m2 = matrix.applyElementaryRowOperation(fieldOfRationalNumbers, op2);
+        m3 = matrix.applyElementaryRowOperation(fieldOfRationalNumbers, op3);
+
+        assertEquals("[[-1/2, 2/3], [1/4, 1]]", m1.toString());
+        assertEquals("[[1/2, 2], [-1/2, 2/3]]", m2.toString());
+        assertEquals("[[0, 4/3], [-1/2, 2/3]]", m3.toString());
+
+    }
 
 }

@@ -227,13 +227,19 @@ public class Matrix<T> {
         ArrayList<ArrayList<T>> newContents = new ArrayList<>(this.contents);
         ArrayList<T> modifiedRow = new ArrayList<>(this.getNumberOfColumns());
         for (int i = 0; i < this.getNumberOfColumns(); i++) {
-            modifiedRow.add(field.add.apply(this.get(row1, i),  field.mul.apply(this.get(row2, i), multiplier)));
+            modifiedRow.add(field.add.apply(this.get(row1, i), field.mul.apply(this.get(row2, i), multiplier)));
         }
         newContents.set(row1, modifiedRow);
         return new Matrix<>(newContents);
     }
 
-
+    Matrix<T> applyElementaryRowOperation(Field<T> field, ElementaryRowOperation op) {
+        return switch (op) {
+            case RowSwap(int i, int j) -> this.swapRows(i, j);
+            case RowMultiplied(int i, var k) -> this.multiplyRow(field, i, (T) k);
+            case RowPlusMultipliedRow(int i, var k, int j) -> this.addMultipliedRow(field, i, (T) k, j);
+        };
+    }
 
 
 }
