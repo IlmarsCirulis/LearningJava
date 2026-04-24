@@ -18,5 +18,10 @@ public class Tinkering {
         System.out.println(toString(new RowSwap<>(1, 3)));
         System.out.println(toString(new RowMultiplied<>(1, Rational.of(-1, 2))));
         System.out.println(toString(new RowPlusMultipliedRow<>(1, Rational.of(3, 14), 0)));
+
+        Rational[][] array = {{Rational.of(1, 2), Rational.of(2, 3)}, {Rational.of(3, 4), Rational.of(4, 5)}};
+        MutableMatrix<Rational> matrix = new MutableMatrix<>(array);
+
+        System.out.println(matrix);
     }
 }

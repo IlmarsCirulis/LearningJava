@@ -240,6 +240,6 @@ public class Matrix<T> {
             case RowPlusMultipliedRow(int i, T k, int j) -> this.addMultipliedRow(field, i, k, j);
         };
     }
-
-
+    
 }
+
