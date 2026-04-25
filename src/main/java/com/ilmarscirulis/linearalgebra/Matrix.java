@@ -1,5 +1,6 @@
 package com.ilmarscirulis.linearalgebra;
 
+import com.ilmarscirulis.linearalgebra.pivotingrules.RowPivotingRule;
 import com.ilmarscirulis.linearalgebra.rowoperations.ElementaryRowOperation;
 import com.ilmarscirulis.linearalgebra.rowoperations.RowMultiplied;
 import com.ilmarscirulis.linearalgebra.rowoperations.RowPlusMultipliedRow;
@@ -7,15 +8,15 @@ import com.ilmarscirulis.linearalgebra.rowoperations.RowSwap;
 import com.ilmarscirulis.structures.Field;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class Matrix<T> {
-    private final ArrayList<ArrayList<T>> contents;
+public abstract class Matrix<T> {
 
-    private Matrix(ArrayList<ArrayList<T>> contents, boolean copy) {
+    public ArrayList<ArrayList<T>> contents;
+
+    public Matrix(ArrayList<ArrayList<T>> contents, boolean copy) {
         if (contents.isEmpty()) {
             throw new IllegalArgumentException("No empty matrices are allowed");
         }
@@ -25,8 +26,10 @@ public class Matrix<T> {
             }
         }
         int sizeOfFirstRow = contents.getFirst().size();
-        if (contents.stream().anyMatch(r -> r.size() != sizeOfFirstRow)) {
-            throw new IllegalArgumentException("Rows of matrix must have the same length");
+        for (ArrayList<T> row : contents) {
+            if (row.size() != sizeOfFirstRow) {
+                throw new IllegalArgumentException(("Rows of matrix must have the same length"));
+            }
         }
         if (copy) {
             this.contents = new ArrayList<>();
@@ -38,20 +41,12 @@ public class Matrix<T> {
         }
     }
 
-    public Matrix(ArrayList<ArrayList<T>> contents) {
-        this(contents, true);
-    }
-
-    public Matrix(T[][] contents) {
-        ArrayList<ArrayList<T>> arrayList = new ArrayList<>();
-        for (T[] row : contents) {
-            arrayList.add(new ArrayList<>(List.of(row)));
+    public Matrix(T[][] array) {
+        ArrayList<ArrayList<T>> temp = new ArrayList<>();
+        for (T[] row : array) {
+            temp.add(new ArrayList<>(Arrays.asList(row)));
         }
-        this(arrayList, false);
-    }
-
-    public Matrix<T> deepCopy() {
-        return new Matrix<>(this.contents, true);
+        this(temp, false);
     }
 
     int getNumberOfRows() {
@@ -78,156 +73,41 @@ public class Matrix<T> {
         return this.contents.get(row).get(col);
     }
 
-    ArrayList<T> getRow(int row) {
-        if (row < 0) {
-            throw new ArrayIndexOutOfBoundsException("Negative indexes for rows aren't allowed");
-        }
-        if (this.getNumberOfRows() <= row) {
-            throw new ArrayIndexOutOfBoundsException("There are only " + this.getNumberOfRows() + " rows in this matrix");
-        }
-        return new ArrayList<>(this.contents.get(row));
-    }
+    abstract Matrix<T> set(int i, int j, T value);
 
-    ArrayList<T> getColumn(int col) {
-        if (col < 0) {
-            throw new ArrayIndexOutOfBoundsException("Negative indexes for rows aren't allowed");
-        }
-        if (this.getNumberOfColumns() <= col) {
-            throw new ArrayIndexOutOfBoundsException("There are only " + this.getNumberOfColumns() + " columns in this matrix");
-        }
-        ArrayList<T> result = new ArrayList<>();
-        for (int i = 0; i < this.getNumberOfRows(); i++) {
-            result.add(this.contents.get(i).get(col));
-        }
-        return result;
-    }
+    abstract Matrix<T> map(Function<T, T> fun);
 
-    private Matrix<T> map(Function<T, T> fun) {
-        ArrayList<ArrayList<T>> newContents = new ArrayList<>();
-        for (ArrayList<T> row : this.contents) {
-            ArrayList<T> newRow = new ArrayList<>();
-            for (T value : row) {
-                newRow.add(fun.apply(value));
-            }
-            newContents.add(newRow);
-        }
-        return new Matrix<>(newContents, false);
-    }
-
-    private Matrix<T> map2(Matrix<T> other, BiFunction<T, T, T> fun) {
-        if (this.getNumberOfRows() != other.getNumberOfRows() || this.getNumberOfColumns() != other.getNumberOfColumns()) {
-            throw new IllegalArgumentException("Matrices has to have the same dimensions");
-        }
-        ArrayList<ArrayList<T>> newContents = new ArrayList<>();
-        for (int row = 0; row < this.getNumberOfRows(); row++) {
-            ArrayList<T> temp = new ArrayList<>();
-            for (int col = 0; col < this.getNumberOfColumns(); col++) {
-                temp.add(fun.apply(this.contents.get(row).get(col), other.contents.get(row).get(col)));
-            }
-            newContents.add(temp);
-        }
-        return new Matrix<>(newContents, false);
-    }
-
-    @Override
-    public String toString() {
-        return this.contents.toString();
-    }
-
-    public Matrix<T> swapRows(int row1, int row2) {
-        if (row1 < 0 || row2 < 0) {
-            throw new IndexOutOfBoundsException("Negative indexes for rows aren't allowed");
-        }
-        if (this.getNumberOfRows() <= row1 || this.getNumberOfRows() <= row2) {
-            throw new IndexOutOfBoundsException("There are only " + this.getNumberOfRows() + " rows in this matrix");
-        }
-        if (row1 == row2) {
-            return this;
-        }
-        ArrayList<ArrayList<T>> newContents = new ArrayList<>(this.contents);
-        ArrayList<T> firstRow = newContents.get(row1), secondRow = newContents.get(row2);
-        newContents.set(row1, secondRow);
-        newContents.set(row2, firstRow);
-        return new Matrix<>(newContents);
-    }
-
-
-    // Arithmetic operations with matrices
+    abstract Matrix<T> map2(BiFunction<T, T, T> fun, Matrix<T> other);
 
     public Matrix<T> multiply(Field<T> field, T multiplier) {
         return this.map(value -> field.mul.apply(value, multiplier));
     }
 
+    ;
+
     public Matrix<T> opp(Field<T> field) {
         return this.map(field.opp);
     }
 
+    ;
+
     public Matrix<T> add(Field<T> field, Matrix<T> other) {
-        return this.map2(other, field.add);
+        return this.map2(field.add, other);
     }
+
+    ;
 
     public Matrix<T> sub(Field<T> field, Matrix<T> other) {
-        return this.map2(other, field.sub);
+        return this.map2(field.sub, other);
     }
 
-    Matrix<T> multiply(Field<T> field, Matrix<T> other) {
-        if (this.getNumberOfColumns() != other.getNumberOfRows()) {
-            throw new IllegalArgumentException("These matrices can't be multiplied because dimensions are wrong");
-        }
-        ArrayList<ArrayList<T>> newContents = new ArrayList<>();
-        for (int row = 0; row < this.getNumberOfRows(); row++) {
-            ArrayList<T> newRow = new ArrayList<>();
-            for (int col = 0; col < other.getNumberOfColumns(); col++) {
-                T temp = field.ZERO;
-                for (int i = 0; i < this.getNumberOfColumns(); i++) {
-                    T summand = field.mul.apply(this.get(row, i), other.get(i, col));
-                    temp = field.add.apply(temp, summand);
-                }
-                newRow.add(temp);
-            }
-            newContents.add(newRow);
-        }
-        return new Matrix<>(newContents, false);
-    }
+    ;
 
+    abstract Matrix<T> swapRows(int row1, int row2);
 
-    Matrix<T> multiplyRow(Field<T> field, int row, T multiplier) {
-        if (row < 0) {
-            throw new IndexOutOfBoundsException("Negative indexes for rows aren't allowed");
-        }
-        if (this.getNumberOfRows() <= row) {
-            throw new IndexOutOfBoundsException("There are only " + this.getNumberOfRows() + " rows in this matrix");
-        }
-        if (multiplier.equals(field.ZERO)) {
-            throw new IllegalArgumentException("The multiplier must be nonzero");
-        }
-        ArrayList<ArrayList<T>> newContents = new ArrayList<>(this.contents);
-        Function<T, T> mul = (x) -> field.mul.apply(x, multiplier);
-        newContents.set(row, new ArrayList<>(newContents.get(row).stream().map(mul).toList()));
-        return new Matrix<>(newContents);
-    }
+    abstract Matrix<T> multiplyRow(Field<T> field, int row, T multiplier);
 
-    Matrix<T> addMultipliedRow(Field<T> field, int row1, T multiplier, int row2) {
-        if (row1 < 0 || row2 < 0) {
-            throw new IndexOutOfBoundsException("Negative indexes for rows aren't allowed");
-        }
-        if (this.getNumberOfRows() <= row1 || this.getNumberOfRows() <= row2) {
-            throw new IndexOutOfBoundsException("There are only " + this.getNumberOfRows() + " rows in this matrix");
-        }
-        if (row1 == row2) {
-            throw new IllegalArgumentException("Row indexes must be different");
-        }
-        if (multiplier.equals(field.ZERO)) {
-            return this;
-        }
-        ArrayList<ArrayList<T>> newContents = new ArrayList<>(this.contents);
-        ArrayList<T> modifiedRow = new ArrayList<>(this.getNumberOfColumns());
-        for (int i = 0; i < this.getNumberOfColumns(); i++) {
-            modifiedRow.add(field.add.apply(this.get(row1, i), field.mul.apply(this.get(row2, i), multiplier)));
-        }
-        newContents.set(row1, modifiedRow);
-        return new Matrix<>(newContents);
-    }
+    abstract Matrix<T> addMultipliedRow(Field<T> field, int row1, T multiplier, int row2);
 
     Matrix<T> applyElementaryRowOperation(Field<T> field, ElementaryRowOperation<T> op) {
         return switch (op) {
@@ -237,7 +117,7 @@ public class Matrix<T> {
         };
     }
 
+    abstract ArrayList<ElementaryRowOperation<T>> operationsForRowEchelonForm(Field<T> field, RowPivotingRule<T> rule, boolean toReduce);
 
-    
+    abstract Matrix<T> toRowEchelonForm(Field<T> field, RowPivotingRule<T> rule, boolean toReduce);
 }
-

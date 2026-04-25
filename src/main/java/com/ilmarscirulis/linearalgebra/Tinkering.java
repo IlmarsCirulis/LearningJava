@@ -9,6 +9,7 @@ import com.ilmarscirulis.structures.Field;
 import com.schuerger.math.rationalj.Rational;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 public class Tinkering {
@@ -32,16 +33,22 @@ public class Tinkering {
 
         MutableMatrix<Rational> matrix = new MutableMatrix<>(array);
         System.out.println(matrix);
-        ArrayList<ElementaryRowOperation<Rational>> ops = matrix.toRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), true);
+
+       ArrayList<ElementaryRowOperation<Rational>> ops = matrix.operationsForRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), true);
         System.out.println(ops);
         System.out.println(matrix);
 
         matrix = new MutableMatrix<>(array);
         System.out.println(matrix);
-        ops = matrix.toRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), false);
+        ops = matrix.operationsForRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), false);
         System.out.println(ops);
         System.out.println(matrix);
 
+        System.out.println();
+
+        ImmutableMatrix<Rational> immutableMatrix = new ImmutableMatrix<>(array);
+        System.out.println(immutableMatrix);
+        System.out.println(immutableMatrix.operationsForRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), true));
 
 
 

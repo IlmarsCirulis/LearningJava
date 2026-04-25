@@ -5,65 +5,38 @@ import com.ilmarscirulis.linearalgebra.rowoperations.*;
 import com.ilmarscirulis.structures.Field;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class MutableMatrix<T> {
+public class MutableMatrix<T> extends Matrix<T> {
 
-    private final ArrayList<ArrayList<T>> contents;
+    public ArrayList<ArrayList<T>> contents;
 
-    public MutableMatrix(ArrayList<ArrayList<T>> contents) {
-        if (contents.isEmpty()) {
-            throw new IllegalArgumentException("No empty matrices are allowed");
-        }
-        for (ArrayList<T> row : contents) {
-            if (row.isEmpty()) {
-                throw new IllegalArgumentException("No empty rows in matrix are allowed");
-            }
-        }
-        int sizeOfFirstRow = contents.getFirst().size();
-        for (ArrayList<T> row : contents) {
-            if (row.size() != sizeOfFirstRow) {
-                throw new IllegalArgumentException(("Rows of matrix must have the same length"));
-            }
-        }
-        this.contents = contents;
+    public MutableMatrix(ArrayList<ArrayList<T>> contents, boolean copy) {
+        super(contents, copy);
+        this.contents = super.contents;
     }
 
     public MutableMatrix(T[][] contents) {
-        ArrayList<ArrayList<T>> temp = new ArrayList<>();
-        for (T[] row : contents) {
-            temp.add(new ArrayList<>(Arrays.asList(row)));
-        }
-        this(temp);
+        super(contents);
+        this.contents = super.contents;
     }
 
-    int getNumberOfRows() {
-        return this.contents.size();
-    }
-
-    int getNumberOfColumns() {
-        return this.contents.getFirst().size();
-    }
-
-    T get(int i, int j) {
-        return this.contents.get(i).get(j);
-    }
-
-    void set(int i, int j, T value) {
+    public MutableMatrix<T> set(int i, int j, T value) {
         this.contents.get(i).set(j, value);
+        return this;
     }
 
-    private void map(Function<T, T> fun) {
+    public MutableMatrix<T> map(Function<T, T> fun) {
         for (int i = 0; i < this.getNumberOfRows(); i++) {
             for (int j = 0; j < this.getNumberOfColumns(); j++) {
                 this.set(i, j, fun.apply(this.get(i, j)));
             }
         }
+        return this;
     }
 
-    private void map2(MutableMatrix<T> other, BiFunction<T, T, T> fun) {
+    public MutableMatrix<T> map2(BiFunction<T, T, T> fun, Matrix<T> other) {
         if (this.getNumberOfRows() != other.getNumberOfRows() || this.getNumberOfColumns() != other.getNumberOfColumns()) {
             throw new IllegalArgumentException("Matrices has to have the same dimensions");
         }
@@ -72,14 +45,11 @@ public class MutableMatrix<T> {
                 this.set(i, j, fun.apply(this.get(i, j), other.get(i, j)));
             }
         }
+        return this;
     }
 
-    @Override
-    public String toString() {
-        return this.contents.toString();
-    }
 
-    public void swapRows(int row1, int row2) {
+    public MutableMatrix<T> swapRows(int row1, int row2) {
         if (row1 < 0 || row2 < 0) {
             throw new IndexOutOfBoundsException("Negative indexes for rows aren't allowed");
         }
@@ -91,26 +61,11 @@ public class MutableMatrix<T> {
             this.contents.set(row1, secondRow);
             this.contents.set(row2, firstRow);
         }
+        return this;
     }
 
 
-    public void multiply(Field<T> field, T multiplier) {
-        this.map(value -> field.mul.apply(value, multiplier));
-    }
-
-    public void opp(Field<T> field) {
-        this.map(field.opp);
-    }
-
-    public void add(Field<T> field, MutableMatrix<T> other) {
-        this.map2(other, field.add);
-    }
-
-    public void sub(Field<T> field, MutableMatrix<T> other) {
-        this.map2(other, field.sub);
-    }
-
-    void multiply(Field<T> field, MutableMatrix<T> other) {
+    MutableMatrix<T> multiply(Field<T> field, Matrix<T> other) {
         if (this.getNumberOfColumns() != other.getNumberOfRows()) {
             throw new IllegalArgumentException("These matrices can't be multiplied because dimensions are wrong");
         }
@@ -130,10 +85,10 @@ public class MutableMatrix<T> {
                 this.set(row, col, value);
             }
         }
+        return this;
     }
 
-
-    void multiplyRow(Field<T> field, int row, T multiplier) {
+    MutableMatrix<T> multiplyRow(Field<T> field, int row, T multiplier) {
         if (row < 0) {
             throw new IndexOutOfBoundsException("Negative indexes for rows aren't allowed");
         }
@@ -148,9 +103,10 @@ public class MutableMatrix<T> {
             newRow.add(field.mul.apply(x, multiplier));
         }
         this.contents.set(row, newRow);
+        return this;
     }
 
-    void addMultipliedRow(Field<T> field, int row1, T multiplier, int row2) {
+    MutableMatrix<T> addMultipliedRow(Field<T> field, int row1, T multiplier, int row2) {
         if (row1 < 0 || row2 < 0) {
             throw new IndexOutOfBoundsException("Negative indexes for rows aren't allowed");
         }
@@ -166,17 +122,10 @@ public class MutableMatrix<T> {
                 this.set(row1, i, field.add.apply(this.get(row1, i), multipliedValue));
             }
         }
+        return this;
     }
 
-    void applyElementaryRowOperation(Field<T> field, ElementaryRowOperation<T> op) {
-        switch (op) {
-            case RowSwap(int i, int j) -> this.swapRows(i, j);
-            case RowMultiplied(int i, T k) -> this.multiplyRow(field, i, k);
-            case RowPlusMultipliedRow(int i, T k, int j) -> this.addMultipliedRow(field, i, k, j);
-        }
-    }
-
-    ArrayList<ElementaryRowOperation<T>> toRowEchelonForm(Field<T> field, RowPivotingRule<T> rule, boolean toReduce) {
+    public ArrayList<ElementaryRowOperation<T>> operationsForRowEchelonForm(Field<T> field, RowPivotingRule<T> rule, boolean toReduce) {
         ArrayList<ElementaryRowOperation<T>> ops = new ArrayList<>();
         int pivotRow = 0, pivotColumn = 0;
         while (pivotRow < this.getNumberOfRows() && pivotColumn < this.getNumberOfColumns()) {
@@ -208,4 +157,15 @@ public class MutableMatrix<T> {
         return ops;
     }
 
+    Matrix<T> toRowEchelonForm(Field<T> field, RowPivotingRule<T> rule, boolean toReduce) {
+        this.operationsForRowEchelonForm(field, rule, toReduce);
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "MutableMatrix{" +
+                "contents=" + this.contents +
+                '}';
+    }
 }
