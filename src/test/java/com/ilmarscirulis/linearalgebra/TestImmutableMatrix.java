@@ -1,9 +1,7 @@
 package com.ilmarscirulis.linearalgebra;
 
-import com.ilmarscirulis.linearalgebra.rowoperations.ElementaryRowOperation;
-import com.ilmarscirulis.linearalgebra.rowoperations.RowMultiplied;
-import com.ilmarscirulis.linearalgebra.rowoperations.RowPlusMultipliedRow;
-import com.ilmarscirulis.linearalgebra.rowoperations.RowSwap;
+import com.ilmarscirulis.linearalgebra.pivotingrules.FirstNonzeroPivot;
+import com.ilmarscirulis.linearalgebra.rowoperations.*;
 import com.schuerger.math.rationalj.Rational;
 import org.junit.jupiter.api.Test;
 import com.ilmarscirulis.structures.Field;
@@ -11,10 +9,9 @@ import com.ilmarscirulis.structures.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class TestMatrix {
+public class TestImmutableMatrix {
 
     private final Field<Rational> fieldOfRationalNumbers = new Field<>(Rational.ZERO, Rational.ONE, Rational::add, Rational::multiply, Rational::negate, Rational::reciprocal);
 
@@ -145,6 +142,24 @@ public class TestMatrix {
         assertEquals(Rational.of(3, 11), m.get(2, 0));
         assertEquals(Rational.of(1), m.get(2, 2));
         assertEquals(Rational.of(213, 2), m.get(1, 1));
+    }
+
+    @Test
+    public void testMatrixDeepCopyAndSet() {
+        Rational[][] arr = {{Rational.of(10, 9), Rational.of(8, 7)}, {Rational.of(6, 5), Rational.of(4, 3)}};
+        ImmutableMatrix<Rational> m = new ImmutableMatrix<>(arr);
+        ImmutableMatrix<Rational> copy = m.deepCopy();
+
+        assertEquals("[[10/9, 8/7], [6/5, 4/3]]", m.toString());
+        assertEquals("[[10/9, 8/7], [6/5, 4/3]]", copy.toString());
+
+        for (int i = 0; i < copy.getNumberOfRows(); i++) {
+            for (int j = 0; j < copy.getNumberOfColumns(); j++) {
+               copy = copy.set(i, j, copy.get(i, j).reciprocal());
+            }
+        }
+        assertEquals("[[10/9, 8/7], [6/5, 4/3]]", m.toString());
+        assertEquals("[[9/10, 7/8], [5/6, 3/4]]", copy.toString());
     }
 
     @Test
@@ -353,7 +368,34 @@ public class TestMatrix {
         assertEquals("[[-1/2, 2/3], [1/4, 1]]", m1.toString());
         assertEquals("[[1/2, 2], [-1/2, 2/3]]", m2.toString());
         assertEquals("[[0, 4/3], [-1/2, 2/3]]", m3.toString());
-
     }
+
+    @Test
+    public void testMatrixOperationsForRowEchelonForm() {
+        Rational[][] arr = {{Rational.of(-4), Rational.of(-1, 3)}, {Rational.of(10, 7), Rational.of(-8, 9)}};
+        ImmutableMatrix<Rational> m1 = new ImmutableMatrix<>(arr);
+        ImmutableMatrix<Rational> m2 = new ImmutableMatrix<>(arr);
+
+        ArrayList<ElementaryRowOperation<Rational>> ops1 =
+                m1.operationsForRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), true);
+        ArrayList<ElementaryRowOperation<Rational>> ops2 =
+                m2.operationsForRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), false);
+
+        ArrayList<ElementaryRowOperation<Rational>> correctOps1 = new ArrayList<>();
+        correctOps1.add(new RowMultiplied<>(0, Rational.of(-1, 4)));
+        correctOps1.add(new RowPlusMultipliedRow<>(1, Rational.of(-10, 7), 0));
+        correctOps1.add(new RowMultiplied<>(1, Rational.of(-126, 127)));
+        ArrayList<ElementaryRowOperation<Rational>> correctOps2 = new ArrayList<>();
+        correctOps2.add(new RowPlusMultipliedRow<>(1, Rational.of(5, 14), 0));
+
+        RowOperationEquals<Rational> cmp = new RowOperationEquals<>(Rational::equals);
+
+        assertTrue(cmp.run(ops1, correctOps1));
+        assertTrue(cmp.run(ops2, correctOps2));
+    }
+
+
+
+
 
 }
