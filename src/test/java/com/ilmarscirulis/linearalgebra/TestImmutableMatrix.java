@@ -155,7 +155,7 @@ public class TestImmutableMatrix {
 
         for (int i = 0; i < copy.getNumberOfRows(); i++) {
             for (int j = 0; j < copy.getNumberOfColumns(); j++) {
-               copy = copy.set(i, j, copy.get(i, j).reciprocal());
+                copy = copy.set(i, j, copy.get(i, j).reciprocal());
             }
         }
         assertEquals("[[10/9, 8/7], [6/5, 4/3]]", m.toString());
@@ -368,6 +368,9 @@ public class TestImmutableMatrix {
         assertEquals("[[-1/2, 2/3], [1/4, 1]]", m1.toString());
         assertEquals("[[1/2, 2], [-1/2, 2/3]]", m2.toString());
         assertEquals("[[0, 4/3], [-1/2, 2/3]]", m3.toString());
+
+        m2 = m1.applyElementaryRowOperation(fieldOfRationalNumbers, op3);
+        assertEquals("[[-3/8, 7/6], [1/4, 1]]", m2.toString());
     }
 
     @Test
@@ -394,8 +397,20 @@ public class TestImmutableMatrix {
         assertTrue(cmp.run(ops2, correctOps2));
     }
 
+    @Test
+    public void testMatrixToRowEchelonForm() {
+        Rational[][] array = {
+                {Rational.of(1), Rational.of(5, 3), Rational.of(10, 7)},
+                {Rational.of(2), Rational.of(-9, 4), Rational.of(-1)},
+                {Rational.of(3, 7), Rational.of(8, 3), Rational.of(2)}
+        };
+        ImmutableMatrix<Rational> startMatrix = new ImmutableMatrix<>(array);
+        ImmutableMatrix<Rational> endMatrixWithoutReduce = startMatrix.toRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), false);
+        ImmutableMatrix<Rational> endMatrixWithReduce = startMatrix.toRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), true);
 
-
+        assertEquals("[[1, 5/3, 10/7], [0, -67/12, -27/7], [0, 0, 128/3283]]", endMatrixWithoutReduce.toString());
+        assertEquals("[[1, 5/3, 10/7], [0, 1, 324/469], [0, 0, 1]]", endMatrixWithReduce.toString());
+    }
 
 
 }

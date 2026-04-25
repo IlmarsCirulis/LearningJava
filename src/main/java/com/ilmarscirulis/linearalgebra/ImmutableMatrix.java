@@ -181,7 +181,7 @@ public class ImmutableMatrix<T> extends Matrix<T> {
     public ImmutableMatrix<T> toRowEchelonForm(Field<T> field, RowPivotingRule<T> rule, boolean toReduce) {
         ArrayList<ArrayList<T>> temp = this.deepCopy().contents;
         MutableMatrix<T> mutableMatrix = new MutableMatrix<>(temp, false);
-        mutableMatrix.operationsForRowEchelonForm(field, new FirstNonzeroPivot<>(), false);
+        mutableMatrix.operationsForRowEchelonForm(field, new FirstNonzeroPivot<>(), toReduce);
         return (new ImmutableMatrix<>(temp, true));
     }
 
