@@ -1,6 +1,9 @@
 package com.ilmarscirulis.linearalgebra;
 
+import com.ilmarscirulis.structures.Field;
 import com.schuerger.math.rationalj.Rational;
+
+import java.util.ArrayList;
 
 
 public class Tinkering {
@@ -19,9 +22,23 @@ public class Tinkering {
         System.out.println(toString(new RowMultiplied<>(1, Rational.of(-1, 2))));
         System.out.println(toString(new RowPlusMultipliedRow<>(1, Rational.of(3, 14), 0)));
 
+        Field<Rational> fieldOfRationalNumbers = new Field<>(Rational.ZERO, Rational.ONE, Rational::add, Rational::multiply, Rational::negate, Rational::reciprocal);
         Rational[][] array = {{Rational.of(1, 2), Rational.of(2, 3)}, {Rational.of(3, 4), Rational.of(4, 5)}};
-        MutableMatrix<Rational> matrix = new MutableMatrix<>(array);
 
+        MutableMatrix<Rational> matrix = new MutableMatrix<>(array);
         System.out.println(matrix);
+        ArrayList<ElementaryRowOperation<Rational>> ops = matrix.toRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), true);
+        System.out.println(ops);
+        System.out.println(matrix);
+
+        matrix = new MutableMatrix<>(array);
+        System.out.println(matrix);
+        ops = matrix.toRowEchelonForm(fieldOfRationalNumbers, new FirstNonzeroPivot<>(), false);
+        System.out.println(ops);
+        System.out.println(matrix);
+
+
+
+
     }
 }
