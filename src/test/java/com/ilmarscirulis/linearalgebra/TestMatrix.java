@@ -1,5 +1,9 @@
 package com.ilmarscirulis.linearalgebra;
 
+import com.ilmarscirulis.linearalgebra.rowoperations.ElementaryRowOperation;
+import com.ilmarscirulis.linearalgebra.rowoperations.RowMultiplied;
+import com.ilmarscirulis.linearalgebra.rowoperations.RowPlusMultipliedRow;
+import com.ilmarscirulis.linearalgebra.rowoperations.RowSwap;
 import com.schuerger.math.rationalj.Rational;
 import org.junit.jupiter.api.Test;
 import com.ilmarscirulis.structures.Field;

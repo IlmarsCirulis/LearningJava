@@ -1,5 +1,7 @@
 package com.ilmarscirulis.linearalgebra;
 
+import com.ilmarscirulis.linearalgebra.pivotingrules.RowPivotingRule;
+import com.ilmarscirulis.linearalgebra.rowoperations.*;
 import com.ilmarscirulis.structures.Field;
 
 import java.util.ArrayList;

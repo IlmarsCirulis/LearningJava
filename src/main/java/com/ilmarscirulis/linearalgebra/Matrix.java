@@ -1,5 +1,9 @@
 package com.ilmarscirulis.linearalgebra;
 
+import com.ilmarscirulis.linearalgebra.rowoperations.ElementaryRowOperation;
+import com.ilmarscirulis.linearalgebra.rowoperations.RowMultiplied;
+import com.ilmarscirulis.linearalgebra.rowoperations.RowPlusMultipliedRow;
+import com.ilmarscirulis.linearalgebra.rowoperations.RowSwap;
 import com.ilmarscirulis.structures.Field;
 
 import java.util.ArrayList;
@@ -127,15 +131,7 @@ public class Matrix<T> {
 
     @Override
     public String toString() {
-        StringJoiner s = new StringJoiner(", ", "[", "]");
-        for (ArrayList<T> row : this.contents) {
-            StringJoiner t = new StringJoiner(", ", "[", "]");
-            for (T value : row) {
-                t.add(value.toString());
-            }
-            s.add(t.toString());
-        }
-        return s.toString();
+        return this.contents.toString();
     }
 
     public Matrix<T> swapRows(int row1, int row2) {
@@ -240,6 +236,8 @@ public class Matrix<T> {
             case RowPlusMultipliedRow(int i, T k, int j) -> this.addMultipliedRow(field, i, k, j);
         };
     }
+
+
     
 }
 

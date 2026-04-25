@@ -1,5 +1,10 @@
 package com.ilmarscirulis.linearalgebra;
 
+import com.ilmarscirulis.linearalgebra.pivotingrules.FirstNonzeroPivot;
+import com.ilmarscirulis.linearalgebra.rowoperations.ElementaryRowOperation;
+import com.ilmarscirulis.linearalgebra.rowoperations.RowMultiplied;
+import com.ilmarscirulis.linearalgebra.rowoperations.RowPlusMultipliedRow;
+import com.ilmarscirulis.linearalgebra.rowoperations.RowSwap;
 import com.ilmarscirulis.structures.Field;
 import com.schuerger.math.rationalj.Rational;
 
